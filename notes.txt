@@ -1,0 +1,20 @@
+same accuracy but [0, 255] -> [0, 1]
+1 neighbour:
+152.26 -> 71.78
+3 neighbours:
+149.46 -> 74.09
+centroid:
+1.33 -> 2.94
+
+input->W1,b1->hidden layer 1->W2,b2->output
+
+25k -> 15k 700 epochs
+
+0.01 remains to 4k instead of going  to 25k
+increases after 100
+20k->3k then 3k to 4k and back, best 2.3k	
+
+Epoch [10/10], Loss: 14.3590
+Test Accuracy: 7.62%
+
+something wrong with loss function
