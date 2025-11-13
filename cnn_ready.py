@@ -62,10 +62,6 @@ def classes_to_weights(ytrain, nc=10):
 preprocessor = DataPreprocessor()
 preprocessor.to_tensors()
 Xtrain, ytrain, Xtest, ytest = preprocessor.return_data()
-batch_size = 2024
-Xtrain = Xtrain[0:batch_size, :, :, :]
-ytrain = ytrain[0:batch_size]
-print(ytrain)
 
 device = "cpu"
 
@@ -75,7 +71,7 @@ criterion = nn.CrossEntropyLoss(weight=classes_to_weights(ytrain))
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
 length1 = len(Xtrain)
-num_epochs = 40
+num_epochs = 20
 for epoch in range(num_epochs):
     running_loss = 0.0
 
