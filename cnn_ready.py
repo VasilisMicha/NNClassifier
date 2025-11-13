@@ -1,17 +1,8 @@
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 import torch
 from torch import optim
 from torch import nn
-from torch._higher_order_ops import out_dtype
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-import torchvision
 import torch.nn.functional as F
-import torchvision.datasets as datasets
-import torchvision.transforms as transforms
-import torchmetrics
 from data import DataPreprocessor
 
 
@@ -71,7 +62,7 @@ def classes_to_weights(ytrain, nc=10):
 preprocessor = DataPreprocessor()
 preprocessor.to_tensors()
 Xtrain, ytrain, Xtest, ytest = preprocessor.return_data()
-batch_size = 256
+batch_size = 2024
 Xtrain = Xtrain[0:batch_size, :, :, :]
 ytrain = ytrain[0:batch_size]
 print(ytrain)
@@ -81,22 +72,22 @@ device = "cpu"
 model = CNN(in_channels=3, num_classes=10).to(device)
 
 criterion = nn.CrossEntropyLoss(weight=classes_to_weights(ytrain))
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
 length1 = len(Xtrain)
-num_epochs = 100
+num_epochs = 40
 for epoch in range(num_epochs):
     running_loss = 0.0
 
     for i in range(length1):
         data = torch.squeeze(Xtrain[i]).to(device)
         targets = ytrain[i].to(device)
+        optimizer.zero_grad()
         scores = model(data)
         loss = criterion(scores, targets)
-        optimizer.zero_grad()
-        loss.backward()
+        loss.backward()  # After loss.backward() and before optimizer.step()
         optimizer.step()
-        running_loss += loss.item() * length1
+        running_loss += loss.item()
 
     print(
         f"Epoch [{epoch + 1}/{num_epochs}]----------------------------------------------------------------"
@@ -105,7 +96,7 @@ for epoch in range(num_epochs):
     print(f"--- Epoch {epoch+1} FINISHED. Avg. Epoch Loss: {epoch_loss:.4f} ---")
 
 
-length2 = len(Xtrain)
+length2 = len(Xtest)
 count = 0
 for i in range(length2):
     data = torch.squeeze(Xtest[i]).to(device)
@@ -113,7 +104,6 @@ for i in range(length2):
     outputs = model(data)
     _, pred = torch.topk(outputs, 1)
     pred = torch.squeeze(pred)
-    print(f"{pred}-{ytest[i]}, ")
     if pred == ytest[i]:
         count += 1
 
