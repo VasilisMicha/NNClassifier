@@ -9,15 +9,16 @@ class DataPreprocessor:
         train = scipy.io.loadmat("../train.mat")
 
         self.Xtrain = train["X"]
+        self.Xtrain = np.transpose(self.Xtrain, (3, 2, 0, 1))
         self.ytrain = np.ravel(train["y"]) - 1
         self.Xtest = test["X"]
+        self.Xtest = np.transpose(self.Xtest, (3, 2, 0, 1))
         self.ytest = np.ravel(test["y"]) - 1
 
     def normalize(self, x):
         return x / 255  # deep learning models prefer number [0, 1]
 
     def prepare_data(self):
-        self.Xtrain = np.transpose(self.Xtrain, (3, 0, 1, 2))
         self.Xtrain = self.Xtrain[:, :, 7:26, :]
         self.Xtrain = np.reshape(
             self.Xtrain,
@@ -30,7 +31,6 @@ class DataPreprocessor:
         is_class_10 = self.ytrain == 10
         self.ytrain[is_class_10] = 0
 
-        self.Xtest = np.transpose(self.Xtest, (3, 0, 1, 2))
         self.Xtest = self.Xtest[:, :, 7:26, :]
         self.Xtest = np.reshape(
             self.Xtest,
