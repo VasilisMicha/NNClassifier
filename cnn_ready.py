@@ -59,6 +59,21 @@ def classes_to_weights(ytrain, nc=10):
     return torch.Tensor(weights)
 
 
+def calculate_accuracy(X, y):
+    length = len(X)
+    count = 0
+    for i in range(length):
+        data = torch.squeeze(X[i]).to(device)
+        targets = y[i].to(device)
+        outputs = model(data)
+        _, pred = torch.topk(outputs, 1)
+        pred = torch.squeeze(pred)
+        if pred == y[i]:
+            count += 1
+
+    print(f"Accuracy: {count/length}")
+
+
 preprocessor = DataPreprocessor()
 preprocessor.to_tensors()
 Xtrain, ytrain, Xtest, ytest = preprocessor.return_data()
@@ -71,7 +86,7 @@ criterion = nn.CrossEntropyLoss(weight=classes_to_weights(ytrain))
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
 length1 = len(Xtrain)
-num_epochs = 20
+num_epochs = 15
 for epoch in range(num_epochs):
     running_loss = 0.0
 
@@ -92,15 +107,5 @@ for epoch in range(num_epochs):
     print(f"--- Epoch {epoch+1} FINISHED. Avg. Epoch Loss: {epoch_loss:.4f} ---")
 
 
-length2 = len(Xtest)
-count = 0
-for i in range(length2):
-    data = torch.squeeze(Xtest[i]).to(device)
-    targets = ytest[i].to(device)
-    outputs = model(data)
-    _, pred = torch.topk(outputs, 1)
-    pred = torch.squeeze(pred)
-    if pred == ytest[i]:
-        count += 1
-
-print(f"Accuracy: {count/length2}")
+print(calculate_accuracy(Xtrain, ytrain))
+print(calculate_accuracy(Xtest, ytest))
