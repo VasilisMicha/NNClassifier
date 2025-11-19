@@ -1,6 +1,7 @@
 import scipy.io
 import torch
 import numpy as np
+from sklearn.model_selection import train_test_split
 
 
 class DataPreprocessor:
@@ -14,12 +15,14 @@ class DataPreprocessor:
         self.Xtest = test["X"]
         self.Xtest = np.transpose(self.Xtest, (3, 2, 0, 1))
         self.ytest = np.ravel(test["y"]) - 1
+        self.Xvalid = np.empty([])
+        self.yvalid = np.empty([])
 
     def normalize(self, x):
         return x / 255  # deep learning models prefer number [0, 1]
 
     def prepare_data(self):
-        self.Xtrain = self.Xtrain[:, :, 7:26, :]
+        # self.Xtrain = self.Xtrain[:, :, 7:26, :]
         self.Xtrain = np.reshape(
             self.Xtrain,
             (
@@ -31,7 +34,7 @@ class DataPreprocessor:
         is_class_10 = self.ytrain == 10
         self.ytrain[is_class_10] = 0
 
-        self.Xtest = self.Xtest[:, :, 7:26, :]
+        # self.Xtest = self.Xtest[:, :, 7:26, :]
         self.Xtest = np.reshape(
             self.Xtest,
             (
@@ -48,6 +51,28 @@ class DataPreprocessor:
         self.ytrain = torch.tensor(self.ytrain, dtype=torch.long)
         self.Xtest = torch.tensor(self.Xtest, dtype=torch.float32)
         self.ytest = torch.tensor(self.ytest, dtype=torch.long)
+        self.Xvalid = torch.tensor(self.Xvalid, dtype=torch.float32)
+        self.yvalid = torch.tensor(self.yvalid, dtype=torch.long)
 
     def return_data(self):
-        return self.Xtrain, self.ytrain, self.Xtest, self.ytest
+        return (
+            self.Xtrain,
+            self.ytrain,
+            self.Xtest,
+            self.ytest,
+            self.Xvalid,
+            self.yvalid,
+        )
+
+    def include_validation(self):
+        self.Xtrain, self.Xvalid, self.ytrain, self.yvalid = train_test_split(
+            self.Xtrain, self.ytrain, test_size=0.10, random_state=42
+        )
+        return (
+            self.Xtrain,
+            self.ytrain,
+            self.Xtest,
+            self.ytest,
+            self.Xvalid,
+            self.yvalid,
+        )

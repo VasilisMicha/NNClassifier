@@ -18,3 +18,19 @@ Epoch [10/10], Loss: 14.3590
 Test Accuracy: 7.62%
 
 something wrong with loss function
+
+0.001: Accuracy: 0.18921058738414076
+Accuracy: 0.1958743085433313
+0.0005: 0.468, 0.488
+0.0001: 0.841, 0.889
+0.00005: 0.842, 0.887
+0.00001: 0.831, 0.863
+\
+3con
+Accuracy: 0.9656610699064173
+None
+Accuracy: 0.8969729563614014
+
+weight normalization
+decrease lr
+early stoppage
