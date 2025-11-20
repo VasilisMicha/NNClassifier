@@ -105,12 +105,20 @@ def validate_model(model, X, y, criterion, device):
     return avg_val_loss, val_accuracy
 
 
+def early_stopping(loss, losses):
+    print(f"checking for early stopping, loss: {loss}")
+    if len(losses) != 0:
+        if abs(loss - losses[-1]) < 0.001:
+            return True
+    return False
+
+
 preprocessor = DataPreprocessor()
 preprocessor.include_validation()
 preprocessor.to_tensors()
 Xtrain, ytrain, Xtest, ytest, Xvalid, yvalid = preprocessor.return_data()
-Xtrain = Xtrain[:3000, :]
-ytrain = ytrain[:3000]
+Xtrain = Xtrain[:1000, :]
+ytrain = ytrain[:1000]
 
 device = "cpu"
 
@@ -120,8 +128,9 @@ criterion = nn.CrossEntropyLoss(weight=classes_to_weights(ytrain))
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
 scheduler = ReduceLROnPlateau(optimizer, mode="min", factor=0.1, patience=0)
 
+validation_losses = []
 length1 = len(Xtrain)
-num_epochs = 15
+num_epochs = 10
 for epoch in range(num_epochs):
     running_loss = 0.0
 
@@ -145,6 +154,9 @@ for epoch in range(num_epochs):
     )
     current_lr = optimizer.param_groups[0]["lr"]
     scheduler.step(avg_val_loss)
+    if early_stopping(avg_val_loss, validation_losses):
+        break
+    validation_losses.append(avg_val_loss)
     print(
         f"Epoch {epoch+1}: Validation Loss = {avg_val_loss:.4f}, Accuracy = {val_accuracy:.2f}%"
     )

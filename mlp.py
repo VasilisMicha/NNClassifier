@@ -101,50 +101,40 @@ class MLP:
             # update weights
             self.backward(X, y, output, lr)
             print(f"Epoch [{epoch+1}/{epochs}], Loss: {loss:.4f}")
+            validation_output = self.forward(Xvalid)
+            loss = criterion(validation_output, yvalid)
+            print(
+                f"validation accuracy: {calculate_accuracy(Xvalid, yvalid)}, loss: {loss}"
+            )
         return losses
+
+
+def calculate_accuracy(X, y):
+    with torch.no_grad():
+        train_output = torch.softmax(model.forward(X), dim=1)
+        predicted_class = torch.argmax(train_output, dim=1).float()
+    length = y.shape[0]
+    count = 0
+    for i in range(length):
+        if y[i] == predicted_class[i]:
+            count += 1
+
+    return 100 * count / length
 
 
 preprocessor = DataPreprocessor()
 preprocessor.prepare_data()
+preprocessor.include_validation()
 preprocessor.to_tensors()
-Xtrain, ytrain, Xtest, ytest = preprocessor.return_data()
-# length = len(ytrain)
-# d = {}
-# for i in range(length):
-#     if ytrain[i].item() in d:
-#         d[ytrain[i].item()] += 1
-#     else:
-#         d[ytrain[i].item()] = 1
-#
-# print(d)
+Xtrain, ytrain, Xtest, ytest, Xvalid, yvalid = preprocessor.return_data()
 
-input_size = 3 * 19 * 32
+input_size = 3 * 32 * 32
 hidden_size = 512
 output_size = 10
 model = MLP(input_size, hidden_size, output_size)
 
 # Train  modeland store the losses
-losses = model.train(Xtrain, ytrain, 100, 0.001)
+losses = model.train(Xtrain, ytrain, 200, 0.005)
 
-with torch.no_grad():
-    test_output = torch.softmax(model.forward(Xtest), dim=1)
-    print(test_output)
-    predicted_class = torch.argmax(test_output, dim=1).float()
-    print(predicted_class)
-
-
-assert isinstance(
-    ytest, torch.Tensor
-), f"ytest must be a torch.Tensor, got {type(ytest)}"
-
-length = ytest.shape[0]
-count = 0
-for i in range(length):
-    if ytest[i] == predicted_class[i]:
-        count += 1
-
-print(count / length)
-
-
-accuracy = torch.mean((predicted_class == ytest).float())
-print(f"Test Accuracy: {accuracy.item() * 100:.2f}%")
+print(calculate_accuracy(Xtest, ytest))
+print(calculate_accuracy(Xtrain, ytrain))
